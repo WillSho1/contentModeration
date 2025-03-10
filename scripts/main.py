@@ -1,14 +1,16 @@
-import scripts.textProcessing as tp
-import numpy as np
-
-
+import pandas as pd
+import scipy.sparse as sparse
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 if __name__ == '__main__':
     # load data
-    train = np.genfromtxt('data/train.csv', delimiter=',', dtype=None, encoding='utf-8')[1:]
-    test = np.genfromtxt('data/test.csv', delimiter=',', dtype=None, encoding='utf-8')[1:]
-    test_labels = np.genfromtxt('data/test_labels.csv', delimiter=',', dtype=None, encoding='utf-8')[1:]
+    print('Loading data...')
+    train_data = pd.read_csv("data/clean/train_clean.csv")
+    test_data = pd.read_csv("data/clean/test_clean.csv")
+    X_train = sparse.load_npz("data/processed/tfidf_train.npz")
+    X_test = sparse.load_npz("data/processed/tfidf_test.npz")
 
-    # process the comments
-    # call tp.clean_text on each comment in train and test
-    # store results in train_clean and test_clean.csv
+    train_meta = train_data.drop(columns=['comment_text'])
+    test_meta = test_data.drop(columns=['comment_text'])
+
+    # need to combine test_labels with test_data

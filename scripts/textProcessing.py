@@ -1,60 +1,80 @@
+import pandas as pd
 import re
-import nltk
-import csv
-import numpy as np
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
+import joblib
 from sklearn.feature_extraction.text import TfidfVectorizer
-
-# download nltk data if not already downloaded
-try:
-    nltk.data.find('corpora/stopwords')
-except LookupError:
-    nltk.download('stopwords')
-try:
-    nltk.data.find('tokenizers/punkt')
-except LookupError:
-    nltk.download('punkt')
-try:
-    nltk.data.find('tokenizers/punkt_tab')
-except LookupError:
-    nltk.download('punkt_tab')
+from scipy import sparse
 
 def clean_text(text):
-    # remove special characters
-    text = re.sub(r'[^a-zA-Z\s]', '', text)
-    # tokenize
-    words = word_tokenize(text.lower())
-    # remove stopwords
-    stop_words = set(stopwords.words('english'))
-    words = [w for w in words if not w in stop_words]
-    # rejoin
-    return ' '.join(words)
+    # handle na
+    if pd.isna(text):
+        return ""
+    # remove special chars
+    text = re.sub(r'[^a-zA-Z\s]', '', str(text)).lower()
+    return text
 
-def load_data_csv(filename):
-    # read data - handling np.genfromtext issue with quotes
-    data = []
-    with open(filename, 'r', encoding='utf-8') as f:
-        csv_reader = csv.reader(f)
-        for row in csv_reader:
-            data.append(row)
-    return data
+def load_and_clean_data(train_path, test_path, output_dir="data/clean"):
+    # load raw data
+    train = pd.read_csv(train_path)
+    test = pd.read_csv(test_path)
 
+    # clean the comments
+    print("Cleaning comments...")
+    train['comment_text'] = train['comment_text'].apply(clean_text)
+    test['comment_text'] = test['comment_text'].apply(clean_text)
+
+    # save cleaned data
+    print("Saving cleaned data...")
+    train.to_csv(f"{output_dir}/train_clean.csv", index=False)
+    test.to_csv(f"{output_dir}/test_clean.csv", index=False)
+    return train, test
+
+def vectorize_data(train, test, output_dir="data/processed"):
+    # ignore common terms and stopwords, lowercase, unigram/bigram, l2 normalization, sublinear tf scaling
+    vectorizer = TfidfVectorizer(
+        max_df=0.5,
+        min_df=10,
+        max_features=100000,
+        stop_words='english',
+        ngram_range=(1, 2),
+        sublinear_tf=True,
+        norm='l2'
+    )
+
+    # fit vectorizer on train and apply to both
+    tfidf_train = vectorizer.fit_transform(train['comment_text'])
+    tfidf_test = vectorizer.transform(test['comment_text'])
+    
+    # save vectorized data and vectorizer
+    print("Saving vectorized data and vectorizer...")
+    sparse.save_npz(f"{output_dir}/tfidf_train.npz", tfidf_train)
+    sparse.save_npz(f"{output_dir}/tfidf_test.npz", tfidf_test)
+    joblib.dump(vectorizer, f"{output_dir}/tfidf_vectorizer.joblib")
+    
+    return tfidf_train, tfidf_test, vectorizer
 
 if __name__ == "__main__":
+    train_path = "data/raw/train.csv"
+    test_path = "data/raw/test.csv"
+    out_clean_path = "data/clean"
+    out_processed_path = "data/processed"
+
     # load data
-    print('Loading data...')
-    train = load_data_csv('data/train.csv')
-    test = load_data_csv('data/test.csv')
+    print('Loading and cleaning data...')
+    train_clean, test_clean = load_and_clean_data(train_path, test_path, out_clean_path)
 
-    # process comments
-    print('Cleaning comments...')
-    for row in train:
-        row[1] = clean_text(row[1])
-    for row in test:
-        row[1] = clean_text(row[1])
+    # vectorize text
+    print('Vectorizing text...')
+    v_train, v_test, vectorizer = vectorize_data(train_clean, test_clean, out_processed_path)
+    print('Done!')
 
-    # save the cleaned data
-    print('Saving cleaned data...')
-    np.savetxt('data/clean/train_clean.csv', train, delimiter=',', fmt='%s')
-    np.savetxt('data/clean/test_clean.csv', test, delimiter=',', fmt='%s')
+    # eda
+    print('Clean_train:', train_clean.shape)
+    print('Clean_test:', test_clean.shape)
+    
+    # print information about the vectorization
+    print(f"Vocabulary size: {len(vectorizer.vocabulary_)}")
+    print(f"Train shape: {v_train.shape}")
+    print(f"Test shape: {v_test.shape}")
+    print(f"Train sparsity: {100.0 * (1.0 - v_train.nnz / (v_train.shape[0] * v_train.shape[1]))}%")
+    print(f"Test sparsity: {100.0 * (1.0 - v_test.nnz / (v_test.shape[0] * v_test.shape[1]))}%")
+    print('Done!')
