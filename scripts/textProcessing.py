@@ -1,7 +1,7 @@
 import pandas as pd
 import re
 import joblib
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from scipy import sparse
 
 def clean_text(text):
@@ -14,8 +14,13 @@ def clean_text(text):
 
 def load_and_clean_data(train_path, test_path, output_dir="data/clean"):
     # load raw data
+    # limiting size
     train = pd.read_csv(train_path)
     test = pd.read_csv(test_path)
+
+    # shape
+    print("Train shape:", train.shape)
+    print("Test shape:", test.shape)
 
     # clean the comments
     print("Cleaning comments...")
@@ -33,7 +38,7 @@ def vectorize_data(train, test, output_dir="data/processed"):
     vectorizer = TfidfVectorizer(
         max_df=0.5,
         min_df=10,
-        max_features=100000,
+        max_features=20000,
         stop_words='english',
         ngram_range=(1, 2),
         sublinear_tf=True,
