@@ -25,14 +25,9 @@ if __name__ == '__main__':
     print('Loading data...')
     train_data = pd.read_csv("data/clean/train_clean.csv")
     test_data = pd.read_csv("data/clean/test_clean.csv")
-    test_labels = pd.read_csv("data/raw/test_labels.csv")
     print("Loading vectorized data...")
     X_train = sparse.load_npz("data/processed/tfidf_train.npz")
     X_test = sparse.load_npz("data/processed/tfidf_test.npz")
-
-    # merge test_labels with test_data
-    print("Merging test labels with test data...")
-    test_data = test_data.merge(test_labels, on='id', how='left')
 
     # compare shapes and first rows
     print(f"Train shape: {train_data.shape}")

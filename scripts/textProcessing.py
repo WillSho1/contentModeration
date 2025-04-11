@@ -17,6 +17,12 @@ def load_and_clean_data(train_path, test_path, output_dir="data/clean"):
     # limiting size
     train = pd.read_csv(train_path)
     test = pd.read_csv(test_path)
+    test_labels = pd.read_csv("data/raw/test_labels.csv")
+
+    # merge test_labels with test data
+    test = test.merge(test_labels, on='id', how='left')
+    # get rid of rows in test_data that have -1 as label
+    test = test[test['toxic'] != -1]
 
     # shape
     print("Train shape:", train.shape)
