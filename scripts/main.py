@@ -22,9 +22,9 @@ def train_model_on_label(X_train, train_data, X_test, test_data, label):
     true_labels = test_data[label].values
 
     #Save predictions
-    output_dir = "data/predictions"
-    #os.makedirs(output_dir, exist_ok=True)
-    np.savez_compressed(f"{output_dir}/{label}_predictions.npz", y_true=true_labels, y_pred=predictions)
+    # output_dir = "data/predictions"
+    # #os.makedirs(output_dir, exist_ok=True)
+    # np.savez_compressed(f"{output_dir}/{label}_predictions.npz", y_true=true_labels, y_pred=predictions)
 
     # Evaluation metrics
     acc = accuracy_score(true_labels, predictions)
