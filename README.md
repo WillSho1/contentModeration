@@ -14,11 +14,11 @@ This is a project for CSE 3000 to explore the ethics of machine learning in cont
 3.  From the download, move `train.csv`, `test.csv`, and `test_labels.csv` into `/data/raw`.
 4.  Run the text processing script:
     ```bash
-    python /scripts/textProcessing.py
+    python ./scripts/textProcessing.py
     ```
 5.  Train the model, run predictions, and print accuracy:
     ```bash
-    python /scripts/main.py
+    python ./scripts/main.py
     ```
 
 
