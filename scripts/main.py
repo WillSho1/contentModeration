@@ -26,6 +26,9 @@ def train_model_on_label(X_train, train_data, X_test, test_data, label):
     probs = mnb.predict_proba(X_test)[:, 1]
     predictions = (probs >= 0.3).astype(int)
 
+    # get true values
+    y_true = test_data[label].values
+
 
     # evaluation
     acc = accuracy_score(test_data[label], predictions)
@@ -37,6 +40,13 @@ def train_model_on_label(X_train, train_data, X_test, test_data, label):
     print(f"Precision: {prec:.4f}")
     print(f"Recall   : {rec:.4f}")
     print(f"F1 Score : {f1:.4f}\n")
+    
+    # save the data
+    np.savez(f"data/predictions/{label}_predictions.npz", 
+         y_true=y_true, 
+         y_pred=predictions, 
+         y_probs=probs)
+
 
 if __name__ == '__main__':
     # load data
