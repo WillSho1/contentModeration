@@ -16,13 +16,16 @@ def train_model_on_label(X_train, train_data, X_test, test_data, label):
     # split train into chunks and train each chunk and evaluate on the rest
     # new models for each chunk - does not use model trained above
     print("Cross-validation on train data...")
-    cv_scores = cross_val_score(mnb, X_train, train_data[label], cv=5, scoring='accuracy')
+    cv_scores = cross_val_score(mnb, X_train, train_data[label], cv=5, scoring='f1')
     print(f"Train CV Accuracy: {cv_scores.mean():.2f} ± {cv_scores.std():.2f}")
 
     # actual model used here
     # predictions on test data
     print("Predicting on test data...")
-    predictions = mnb.predict(X_test)
+    #predictions = mnb.predict(X_test)
+    probs = mnb.predict_proba(X_test)[:, 1]
+    predictions = (probs >= 0.3).astype(int)
+
 
     # evaluation
     acc = accuracy_score(test_data[label], predictions)

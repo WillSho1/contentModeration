@@ -16,6 +16,14 @@ def plot_confusion(label):
     plt.savefig(f"data/predictions/{label}_confusion_matrix.png")
     plt.show()
 
+    precision, recall, thresholds = precision_recall_curve(y_true, probs)
+    plt.plot(recall, precision)
+    plt.title(f'Precision-Recall Curve - {label}')
+    plt.xlabel("Recall")
+    plt.ylabel("Precision")
+    plt.savefig(f'data/predictions/{label}_pr_curve.png')
+    plt.show()
+
 if __name__ == '__main__':
     labels = ['toxic', 'severe_toxic', 'obscene', 'threat', 'insult', 'identity_hate']
     for label in labels:

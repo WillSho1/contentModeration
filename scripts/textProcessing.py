@@ -42,9 +42,9 @@ def load_and_clean_data(train_path, test_path, output_dir="data/clean"):
 def vectorize_data(train, test, output_dir="data/processed"):
     # ignore common terms and stopwords, lowercase, unigram/bigram, l2 normalization, sublinear tf scaling
     vectorizer = TfidfVectorizer(
-        max_df=0.5,
-        min_df=10,
-        max_features=20000,
+        max_df=0.7,
+        min_df=5,
+        max_features=5000,
         stop_words='english',
         ngram_range=(1, 2),
         sublinear_tf=True,
