@@ -39,13 +39,35 @@ def train_model_on_label(X_train, train_data, X_test, test_data, label):
     print(f"Accuracy : {acc:.4f}")
     print(f"Precision: {prec:.4f}")
     print(f"Recall   : {rec:.4f}")
-    print(f"F1 Score : {f1:.4f}\n")
+    print(f"F1 Score : {f1:.4f}")
+    # print number of false positives and false negatives and true positives and true negatives
+    fp = np.sum((predictions == 1) & (y_true == 0))
+    fn = np.sum((predictions == 0) & (y_true == 1))
+    tp = np.sum((predictions == 1) & (y_true == 1))
+    tn = np.sum((predictions == 0) & (y_true == 0))
+    print(f"False Positives: {fp}")
+    print(f"False Negatives: {fn}")
+    print(f"True Positives: {tp}")
+    print(f"True Negatives: {tn}\n")
     
     # save the data
     np.savez(f"data/predictions/{label}_predictions.npz", 
          y_true=y_true, 
          y_pred=predictions, 
          y_probs=probs)
+    
+    # return performance metrics
+    performance_metrics = {
+        'accuracy': acc,
+        'precision': prec,
+        'recall': rec,
+        'f1_score': f1,
+        'false_positives': fp,
+        'false_negatives': fn,
+        'true_positives': tp,
+        'true_negatives': tn
+    }
+    return performance_metrics
 
 
 if __name__ == '__main__':
@@ -63,7 +85,18 @@ if __name__ == '__main__':
 
     # iterate over labels
     labels = ['toxic', 'severe_toxic', 'obscene', 'threat', 'insult', 'identity_hate']
+    performance_metrics = {}
     for label in labels:
         print(f"Label: {label}")
+
+        # calculate baseline accuracy
+        baseline_acc = train_data[label].value_counts(normalize=True).max()
+        print(f"Baseline Accuracy: {baseline_acc:.4f}")
+
         # train model on each label
-        train_model_on_label(X_train, train_data, X_test, test_data, label)
+        performance_metrics[label] = train_model_on_label(X_train, train_data, X_test, test_data, label)
+    
+    # ACCURACY
+    for label in labels:
+        # print accurancy
+        print(f"{label} Accuracy: {performance_metrics[label]['accuracy']:.4f}")
